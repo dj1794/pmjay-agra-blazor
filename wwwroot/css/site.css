@@ -1,0 +1,4 @@
+body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
+.table { width:100%; border-collapse:collapse; background:#fff; }
+.table th, .table td { border:1px solid #ccc; padding:6px; }
+.table th { background:#007bff; color:#fff; position:sticky; top:0; }
