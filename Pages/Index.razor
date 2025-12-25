@@ -1,34 +1,152 @@
 @page "/"
 @using System.Linq
 @using Microsoft.JSInterop
+@using PmjayAgra.Blazor.Data
 @inject PmjayAgra.Blazor.Data.AgraDataService DataService
 @inject IJSRuntime JS
 
 <style>
-/* Styles ported from INDEXRef.HTML (simplified) */
-body { font-family: Arial, sans-serif; background: #f4f6f8; padding:20px; }
-.header { display: flex; align-items: center; gap:20px; margin-bottom:10px; }
-.header img { height:70px; }
-h2, h4 { text-align: center; margin:4px0; }
-.filters { background: #fff; padding:15px; border-radius:6px; display: grid; grid-template-columns: repeat(4,1fr); gap:12px; margin-bottom:15px; }
-.filter-group { display: flex; flex-direction: column; }
-.filter-group label { font-size:12px; font-weight: bold; margin-bottom:4px; }
-.filter-group input, .filter-group select { padding:7px; font-size:13px; }
-.summary { display: flex; gap:15px; margin-bottom:15px; }
-.card { flex:1; background: #fff; padding:12px; border-radius:6px; text-align: center; box-shadow:01px4px rgba(0,0,0,0.1); }
-.card b { font-size:18px; color: #007bff; }
-.actions { text-align: right; margin-bottom:10px; }
-button { padding:8px12px; border: none; border-radius:4px; cursor: pointer; color: #fff; }
-.download { background: #28a745; }
-.print { background: #6c757d; }
-.table-wrapper { background: #fff; padding:8px; border-radius:6px; }
-.table { width:100%; border-collapse: collapse; background: #fff; font-size:12px; }
-th, td { border:1px solid #ccc; padding:6px; }
-th { background: #007bff; color: #fff; position: sticky; top:0; }
-tr:nth-child(even) { background: #f2f2f2; }
-.pager { display: flex; gap:8px; align-items: center; justify-content: center; margin-top:10px; }
-/* PRINT */
-@@media print { .filters, .actions { display: none; } body { background: white; } th { background: #ddd !important; color: black !important; } }
+ /* Styles ported from INDEXRef.HTML (simplified) */
+ body {
+ font-family: Arial, sans-serif;
+ background: #f4f6f8;
+ padding:20px;
+ }
+
+ .header {
+ display: flex;
+ align-items: center;
+ gap:20px;
+ margin-bottom:10px;
+ }
+
+ .header img {
+ height:70px;
+ }
+
+ h2, h4 {
+ text-align: center;
+ margin:4px0;
+ }
+
+ .filters {
+ background: #fff;
+ padding:15px;
+ border-radius:6px;
+ display: grid;
+ grid-template-columns: repeat(4,1fr);
+ gap:12px;
+ margin-bottom:15px;
+ }
+
+ .filter-group {
+ display: flex;
+ flex-direction: column;
+ }
+
+ .filter-group label {
+ font-size:12px;
+ font-weight: bold;
+ margin-bottom:4px;
+ }
+
+ .filter-group input, .filter-group select {
+ padding:7px;
+ font-size:13px;
+ }
+
+ .summary {
+ display: flex;
+ gap:15px;
+ margin-bottom:15px;
+ }
+
+ .card {
+ flex:1;
+ background: #fff;
+ padding:12px;
+ border-radius:6px;
+ text-align: center;
+ box-shadow:01px4px rgba(0,0,0,0.1);
+ }
+
+ .card b {
+ font-size:18px;
+ color: #007bff;
+ }
+
+ .actions {
+ text-align: right;
+ margin-bottom:10px;
+ }
+
+ button {
+ padding:8px12px;
+ border: none;
+ border-radius:4px;
+ cursor: pointer;
+ color: #fff;
+ }
+
+ .download {
+ background: #28a745;
+ }
+
+ .print {
+ background: #6c757d;
+ }
+
+ .table-wrapper {
+ background: #fff;
+ padding:8px;
+ border-radius:6px;
+ }
+
+ .table {
+ width:100%;
+ border-collapse: collapse;
+ background: #fff;
+ font-size:12px;
+ }
+
+ th, td {
+ border:1px solid #ccc;
+ padding:6px;
+ }
+
+ th {
+ background: #007bff;
+ color: #fff;
+ position: sticky;
+ top:0;
+ }
+
+ tr:nth-child(even) {
+ background: #f2f2f2;
+ }
+
+ .pager {
+ display: flex;
+ gap:8px;
+ align-items: center;
+ justify-content: center;
+ margin-top:10px;
+ }
+ /* PRINT */
+ @@media print {
+ .filters, .actions {
+ display: none;
+ }
+
+ body {
+ background: white;
+ }
+
+ th {
+ background: #ddd !important;
+ color: black !important;
+ }
+ }
 </style>
 
 <div class="header">
@@ -43,24 +161,21 @@ tr:nth-child(even) { background: #f2f2f2; }
 <div class="filters">
  <div class="filter-group">
  <label>Search (Name / Family ID)</label>
+ <div style="display:flex; gap:8px;">
  <input @bind="Search" />
+ <button @onclick="ApplyFiltersClicked">Apply Filters</button>
+ </div>
  </div>
 
- <div class="filter-group">
- <label>District</label>
- <select @bind="District">
- <option value="">All</option>
- <option>Agra</option>
- </select>
- </div>
 
  <div class="filter-group">
  <label>Block</label>
  <select @bind="Block">
  <option value="">All</option>
- <option>Etmadpur</option>
- <option>Sadar</option>
- <option>MCORP</option>
+ @foreach (var b in Blocks)
+ {
+ <option value="@b">@b</option>
+ }
  </select>
  </div>
 
@@ -68,8 +183,8 @@ tr:nth-child(even) { background: #f2f2f2; }
  <label>Village / Ward</label>
  <select @bind="Village">
  <option value="">All</option>
- <option>VILLAGE1</option>
- <option>VILLAGE2</option>
+ <option value="VILLAGE1">VILLAGE1</option>
+ <option value="VILLAGE2">VILLAGE2</option>
  </select>
  </div>
 
@@ -77,8 +192,8 @@ tr:nth-child(even) { background: #f2f2f2; }
  <label>Rural / Urban</label>
  <select @bind="RU">
  <option value="">All</option>
- <option>RURAL</option>
- <option>URBAN</option>
+ <option value="RURAL">RURAL</option>
+ <option value="URBAN">URBAN</option>
  </select>
  </div>
 
@@ -86,11 +201,11 @@ tr:nth-child(even) { background: #f2f2f2; }
  <label>Source Type</label>
  <select @bind="Source">
  <option value="">All</option>
- <option>SECC</option>
- <option>TPHH</option>
- <option>MMJAA</option>
- <option>STPHH</option>
- <option>BOCW</option>
+ <option value="SECC">SECC</option>
+ <option value="TPHH">TPHH</option>
+ <option value="MMJAA">MMJAA</option>
+ <option value="STPHH">STPHH</option>
+ <option value="BOCW">BOCW</option>
  </select>
  </div>
 
@@ -98,10 +213,11 @@ tr:nth-child(even) { background: #f2f2f2; }
  <label>Member Status</label>
  <select @bind="MemberStatus">
  <option value="">All</option>
- <option>Approved</option>
- <option>Disabled</option>
- <option>Pending</option>
- <option>ACTIVE</option>
+ <option value="Approved">Approved</option>
+ <option value="Disabled">Disabled</option>
+ <option value="Applied">Applied</option>
+ <option value="KYC needed">KYC needed</option>
+
  </select>
  </div>
 
@@ -109,18 +225,21 @@ tr:nth-child(even) { background: #f2f2f2; }
  <label>Family Status</label>
  <select @bind="FamilyStatus">
  <option value="">All</option>
- <option>ACTIVE</option>
- <option>INACTIVE</option>
+ <option value="ACTIVE">ACTIVE</option>
+ <option value="INACTIVE">INACTIVE</option>
  </select>
  </div>
 </div>
 
+<!-- DEBUG: current filters (remove in production) -->
+<div style="margin:6px0; font-size:12px; color:#333;">Filters: Block=@Block | Village=@Village | R/U=@RU | Source=@Source | MemberStatus=@MemberStatus | FamilyStatus=@FamilyStatus | PageSize=@PageSize</div>
+
 <!-- SUMMARY -->
 <div class="summary">
- <div class="card">Total Families<br><b>@TotalFamilies</b></div>
- <div class="card">Total Members<br><b>@TotalMembers</b></div>
- <div class="card">Covered Members<br><b>@CoveredMembers</b></div>
- <div class="card">Covered Families<br><b>@CoveredFamilies</b></div>
+ <div class="card">Total Families<br><b>@Summary.TotalFamilies</b></div>
+ <div class="card">Total Members<br><b>@Summary.TotalMembers</b></div>
+ <div class="card">Covered Members<br><b>@Summary.CoveredMembers</b></div>
+ <div class="card">Covered Families<br><b>@Summary.CoveredFamilies</b></div>
 </div>
 
 <div class="actions">
@@ -132,14 +251,14 @@ tr:nth-child(even) { background: #f2f2f2; }
  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom:8px;">
  <div>
  <label>Page size: </label>
- <select @onchange="OnPageSizeChanged" value="@PageSize">
+ <select @bind="PageSize">
  <option value="10">10</option>
  <option value="25">25</option>
  <option value="100">100</option>
  <option value="250">250</option>
  </select>
  </div>
- <div>Showing @((CurrentPage-1)*PageSize +1)-@Math.Min(CurrentPage*PageSize, Total) of @Total</div>
+ <div>Showing @((CurrentPage -1) * PageSize +1)-@Math.Min(CurrentPage * PageSize, Total) of @Total</div>
  </div>
 
  <table class="table">
@@ -174,39 +293,71 @@ tr:nth-child(even) { background: #f2f2f2; }
 </div>
 
 @code {
- readonly List<string> ReferenceHeaders = new()
+ readonly List<string> Blocks = new()
  {
- "Family ID","Member ID","Name","Relation","Guardian","R/U","District","Block","Village","Source","Member Status","Family Status"
+ "ACHHNERA",
+ "AKOLA",
+ "BAH",
+ "BARAULI AHIR",
+ "BICHPURI",
+ "ETMADPUR",
+ "FATEHABAD",
+ "FATEHPUR SIKRI",
+ "JAGNER",
+ "JAITPUR KALAN",
+ "KHANDAULI",
+ "KHERAGARH",
+ "PINAHAT",
+ "SAIYAN",
+ "SHAMSABAD",
+ "M.cCORP"
+ };
+
+ // Use DTO property names as the headers (these match the keys produced by DataService)
+ readonly List<string> DtoHeaders = new()
+ {
+ "src_family_id",
+ "src_member_id",
+ "name",
+ "relation",
+ "father_guardian_name",
+ "rural_urban_flag",
+ "district_name",
+ "blockname",
+ "source_address",
+ "addressasperadhaarofapproved",
+ "village_ward_lgd_code",
+ "source_type",
+ "card_status_member",
+ "card_status_family",
+ "memberbelongtozeropovery"
  };
 
  List<string> Headers = new();
  List<Dictionary<string, object?>> Rows = new();
  List<Dictionary<string, object?>> DisplayRows = new();
 
+ SummaryDto Summary = new();
+
  // Filters
  string Search = string.Empty;
  string District = string.Empty;
- string Block = string.Empty;
- string Village = string.Empty;
- string RU = string.Empty;
- string Source = string.Empty;
- string MemberStatus = string.Empty;
- string FamilyStatus = string.Empty;
+ string Block { get; set; } = string.Empty;
+ string Village { get; set; } = string.Empty;
+ string RU { get; set; } = string.Empty;
+ string Source { get; set; } = string.Empty;
+ string MemberStatus { get; set; } = string.Empty;
+ string FamilyStatus { get; set; } = string.Empty;
 
  int Total =0;
  int CurrentPage =1;
- int PageSize =10; // default kept at10
+ int PageSize { get; set; } =10; // default to10
  int TotalPages => Math.Max(1, (int)Math.Ceiling((double)Total / PageSize));
 
- int TotalFamilies => ComputeTotalFamilies();
- int TotalMembers => DisplayRows.Count;
- int CoveredMembers => DisplayRows.Count(r => string.Equals(GetValue(r, "Member Status"), "ACTIVE", StringComparison.OrdinalIgnoreCase));
- int CoveredFamilies => DisplayRows
- .GroupBy(r => GetValue(r, "Family ID"))
- .Where(g => !string.IsNullOrEmpty(g.Key) && string.Equals(GetValue(g.First(), "Family Status"), "ACTIVE", StringComparison.OrdinalIgnoreCase))
- .Select(g => g.Key)
- .Distinct(StringComparer.OrdinalIgnoreCase)
- .Count();
+ int TotalFamilies => Summary.TotalFamilies;
+ int TotalMembers => Summary.TotalMembers;
+ int CoveredMembers => Summary.CoveredMembers;
+ int CoveredFamilies => Summary.CoveredFamilies;
 
  protected override async Task OnInitializedAsync()
  {
@@ -215,10 +366,12 @@ tr:nth-child(even) { background: #f2f2f2; }
 
  async Task LoadPage()
  {
- Total = await DataService.GetTotalAsync();
- Rows = await DataService.GetPageAsync(CurrentPage, PageSize);
+ Summary = await DataService.GetFilteredSummaryAsync(Block, Village, RU, Source, MemberStatus, FamilyStatus, Search);
+ Total = Summary.TotalMembers;
+ Rows = await DataService.GetPageAsync(CurrentPage, PageSize, Block, Village, RU, Source, MemberStatus, FamilyStatus, Search);
+ // Only keep headers that are defined in the DTO and appear in the row keys
  var firstKeys = Rows.FirstOrDefault()?.Keys ?? Enumerable.Empty<string>();
- Headers = ReferenceHeaders.Concat(firstKeys.Where(k => !ReferenceHeaders.Contains(k))).ToList();
+ Headers = DtoHeaders.Where(h => firstKeys.Contains(h, StringComparer.OrdinalIgnoreCase)).ToList();
  ApplyFilters();
  }
 
@@ -229,19 +382,25 @@ tr:nth-child(even) { background: #f2f2f2; }
  bool Matches(Dictionary<string, object?> r)
  {
  string Get(string key) => (GetValue(r, key) ?? string.Empty).ToString();
- if (!string.IsNullOrWhiteSpace(Search) && !(Get("Name").Contains(Search, StringComparison.OrdinalIgnoreCase) || Get("Family ID").Contains(Search, StringComparison.OrdinalIgnoreCase))) return false;
- if (!string.IsNullOrWhiteSpace(District) && !Get("District").Equals(District, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(Block) && !Get("Block").Equals(Block, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(Village) && !Get("Village").Contains(Village, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(RU) && !Get("R/U").Equals(RU, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(Source) && !Get("Source").Equals(Source, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(MemberStatus) && !Get("Member Status").Equals(MemberStatus, StringComparison.OrdinalIgnoreCase)) return false;
- if (!string.IsNullOrWhiteSpace(FamilyStatus) && !Get("Family Status").Equals(FamilyStatus, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(Search) && !(Get("name").Contains(Search, StringComparison.OrdinalIgnoreCase) || Get("src_family_id").Contains(Search, StringComparison.OrdinalIgnoreCase))) return false;
+ if (!string.IsNullOrWhiteSpace(District) && !Get("district_name").Equals(District, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(Block) && !Get("blockname").Equals(Block, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(Village) && !Get("village_ward_lgd_code").Contains(Village, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(RU) && !Get("rural_urban_flag").Equals(RU, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(Source) && !Get("source_type").Equals(Source, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(MemberStatus) && !Get("card_status_member").Equals(MemberStatus, StringComparison.OrdinalIgnoreCase)) return false;
+ if (!string.IsNullOrWhiteSpace(FamilyStatus) && !Get("card_status_family").Equals(FamilyStatus, StringComparison.OrdinalIgnoreCase)) return false;
  return true;
  }
 
  DisplayRows = q.Where(Matches).ToList();
  StateHasChanged();
+ }
+
+ async Task ApplyFiltersClicked()
+ {
+ CurrentPage =1;
+ await LoadPage();
  }
 
  string? GetValue(Dictionary<string, object?> row, string key)
@@ -255,7 +414,7 @@ tr:nth-child(even) { background: #f2f2f2; }
 
  int ComputeTotalFamilies()
  {
- return DisplayRows.Select(r => GetValue(r, "Family ID")).Where(s => !string.IsNullOrEmpty(s)).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+ return DisplayRows.Select(r => GetValue(r, "src_family_id")).Where(s => !string.IsNullOrEmpty(s)).Distinct(StringComparer.OrdinalIgnoreCase).Count();
  }
 
  void Prev() { if (CurrentPage >1) { CurrentPage--; _ = LoadPage(); } }
@@ -263,20 +422,13 @@ tr:nth-child(even) { background: #f2f2f2; }
  void First() { if (CurrentPage !=1) { CurrentPage =1; _ = LoadPage(); } }
  void Last() { if (CurrentPage != TotalPages) { CurrentPage = TotalPages; _ = LoadPage(); } }
 
- async Task OnPageSizeChanged(ChangeEventArgs e)
- {
- if (int.TryParse(e.Value?.ToString(), out var v)) PageSize = v;
- CurrentPage =1;
- await LoadPage();
- }
-
  async Task ExportCsv()
  {
  var csv = new List<string>();
  csv.Add(string.Join(",", Headers.Select(h => '"' + h + '"')));
  foreach (var r in DisplayRows)
  {
- var row = Headers.Select(h => '"' + (GetValue(r,h) ?? string.Empty).Replace("\"","''") + '"');
+ var row = Headers.Select(h => '"' + (GetValue(r, h) ?? string.Empty).Replace("\"", "''") + '"');
  csv.Add(string.Join(",", row));
  }
  var content = string.Join("\n", csv);
@@ -291,10 +443,10 @@ tr:nth-child(even) { background: #f2f2f2; }
 
 <!-- JS helpers -->
 <script>
-window.downloadBlob = function(content, filename){
+ window.downloadBlob = function(content, filename){
  var a=document.createElement('a');
  a.href=URL.createObjectURL(new Blob([content],{type:'text/csv'}));
  a.download=filename;
  a.click();
-};
+ };
 </script>
