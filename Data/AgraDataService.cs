@@ -106,44 +106,44 @@ public class AgraDataService
     {
         if (!string.IsNullOrWhiteSpace(block))
         {
-            var ub = block.ToUpper();
-            q = q.Where(a => a.blockname != null && a.blockname.ToUpper() == ub);
+            var ub = block.Trim().ToUpperInvariant();
+            q = q.Where(a => a.blockname != null && a.blockname.Trim().ToUpperInvariant() == ub);
         }
 
         if (!string.IsNullOrWhiteSpace(village))
         {
-            var uv = village.ToUpper();
-            q = q.Where(a => a.village_ward_lgd_code != null && a.village_ward_lgd_code.ToUpper().Contains(uv));
+            var uv = village.Trim().ToUpperInvariant();
+            q = q.Where(a => a.village_ward_lgd_code != null && a.village_ward_lgd_code.Trim().ToUpperInvariant().Contains(uv));
         }
 
         if (!string.IsNullOrWhiteSpace(ru))
         {
-            var ur = ru.ToUpper();
-            q = q.Where(a => a.rural_urban_flag != null && a.rural_urban_flag.ToUpper() == ur);
+            var ur = ru.Trim().ToUpperInvariant();
+            q = q.Where(a => a.rural_urban_flag != null && a.rural_urban_flag.Trim().ToUpperInvariant() == ur);
         }
 
         if (!string.IsNullOrWhiteSpace(sourceType))
         {
-            var us = sourceType.ToUpper();
-            q = q.Where(a => a.source_type != null && a.source_type.ToUpper() == us);
+            var us = sourceType.Trim().ToUpperInvariant();
+            q = q.Where(a => a.source_type != null && a.source_type.Trim().ToUpperInvariant() == us);
         }
 
         if (!string.IsNullOrWhiteSpace(memberStatus))
         {
-            var um = memberStatus.ToUpper();
-            q = q.Where(a => a.card_status_member != null && a.card_status_member.ToUpper() == um);
+            var um = memberStatus.Trim().ToUpperInvariant();
+            q = q.Where(a => a.card_status_member != null && a.card_status_member.Trim().ToUpperInvariant() == um);
         }
 
         if (!string.IsNullOrWhiteSpace(familyStatus))
         {
-            var uf = familyStatus.ToUpper();
-            q = q.Where(a => a.card_status_family != null && a.card_status_family.ToUpper() == uf);
+            var uf = familyStatus.Trim().ToUpperInvariant();
+            q = q.Where(a => a.card_status_family != null && a.card_status_family.Trim().ToUpperInvariant() == uf);
         }
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim().ToUpper();
-            q = q.Where(a => (a.name != null && a.name.ToUpper().Contains(s)) || (a.src_family_id != null && a.src_family_id.ToUpper().Contains(s)));
+            var s = search.Trim().ToUpperInvariant();
+            q = q.Where(a => (a.name != null && a.name.Trim().ToUpperInvariant().Contains(s)) || (a.src_family_id != null && a.src_family_id.Trim().ToUpperInvariant().Contains(s)));
         }
 
         return q;
